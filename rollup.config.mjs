@@ -1,13 +1,15 @@
-import typescript from 'rollup-plugin-typescript2';
-import pkg from './package.json';
+/* eslint-disable prettier/prettier */
+import typescriptPlugin from 'rollup-plugin-typescript2';
+import pkg from './package.json' assert { type: "json" };
+import typescript from 'typescript';
 
 export default [
   {
     input: 'src/index.ts',
     external: Object.keys(pkg.peerDependencies || {}),
     plugins: [
-      typescript({
-        typescript: require('typescript'),
+      typescriptPlugin({
+        typescript: typescript,
       }),
     ],
     output: [

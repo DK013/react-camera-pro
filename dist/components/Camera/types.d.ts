@@ -1,11 +1,11 @@
 /// <reference types="react" />
-export declare type FacingMode = 'user' | 'environment';
-export declare type AspectRatio = 'cover' | number;
-export declare type Stream = MediaStream | null;
-export declare type SetStream = React.Dispatch<React.SetStateAction<Stream>>;
-export declare type SetNumberOfCameras = React.Dispatch<React.SetStateAction<number>>;
-export declare type SetNotSupported = React.Dispatch<React.SetStateAction<boolean>>;
-export declare type SetPermissionDenied = React.Dispatch<React.SetStateAction<boolean>>;
+export type FacingMode = 'user' | 'environment';
+export type AspectRatio = 'cover' | number;
+export type Stream = MediaStream | null;
+export type SetStream = React.Dispatch<React.SetStateAction<Stream>>;
+export type SetNumberOfCameras = React.Dispatch<React.SetStateAction<number>>;
+export type SetNotSupported = React.Dispatch<React.SetStateAction<boolean>>;
+export type SetPermissionDenied = React.Dispatch<React.SetStateAction<boolean>>;
 export interface CameraProps {
     facingMode?: FacingMode;
     aspectRatio?: AspectRatio;
@@ -19,8 +19,10 @@ export interface CameraProps {
     };
     videoReadyCallback?(): void;
 }
-export declare type CameraType = React.ForwardRefExoticComponent<CameraProps & React.RefAttributes<unknown>> & {
-    takePhoto(): string;
+export type CameraType = React.ForwardRefExoticComponent<CameraProps & React.RefAttributes<unknown>> & {
+    takePhoto(type?: 'base64url' | 'imgData'): string | ImageData;
     switchCamera(): FacingMode;
     getNumberOfCameras(): number;
+    toggleTorch(): boolean;
+    torchSupported: boolean;
 };

@@ -2,26 +2,29 @@
 import React, { useRef, useState, useEffect, useImperativeHandle } from 'react';
 import styled from 'styled-components';
 
-/*! *****************************************************************************
-Copyright (c) Microsoft Corporation. All rights reserved.
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use
-this file except in compliance with the License. You may obtain a copy of the
-License at http://www.apache.org/licenses/LICENSE-2.0
+/******************************************************************************
+Copyright (c) Microsoft Corporation.
 
-THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
-WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
-MERCHANTABLITY OR NON-INFRINGEMENT.
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
 
-See the Apache Version 2.0 License for specific language governing permissions
-and limitations under the License.
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
 ***************************************************************************** */
+/* global Reflect, Promise, SuppressedError, Symbol */
+
 
 function __awaiter(thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 }
@@ -32,7 +35,7 @@ function __generator(thisArg, body) {
     function verb(n) { return function (v) { return step([n, v]); }; }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
+        while (g && (g = 0, op[0] && (_ = 0)), _) try {
             if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
             if (y = 0, t) op = [op[0] & 2, t.value];
             switch (op[0]) {
@@ -54,18 +57,31 @@ function __generator(thisArg, body) {
     }
 }
 
+function __spreadArray(to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+}
+
 function __makeTemplateObject(cooked, raw) {
     if (Object.defineProperty) { Object.defineProperty(cooked, "raw", { value: raw }); } else { cooked.raw = raw; }
     return cooked;
 }
+typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
+    var e = new Error(message);
+    return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+};
 
 var Wrapper = styled.div(templateObject_1 || (templateObject_1 = __makeTemplateObject(["\n  position: absolute;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%;\n"], ["\n  position: absolute;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%;\n"])));
-var Container = styled.div(templateObject_2 || (templateObject_2 = __makeTemplateObject(["\n  width: 100%;\n  ", "\n"], ["\n  width: 100%;\n  ",
-    "\n"])), function (_a) {
+var Container = styled.div(templateObject_2 || (templateObject_2 = __makeTemplateObject(["\n  width: 100%;\n  ", "\n"], ["\n  width: 100%;\n  ", "\n"])), function (_a) {
     var aspectRatio = _a.aspectRatio;
     return aspectRatio === 'cover'
         ? "\n    position: absolute;\n    bottom: 0;\n    top: 0;\n    left: 0;\n    right: 0;"
-        : "\n    position: relative;\n    padding-bottom: " + 100 / aspectRatio + "%;";
+        : "\n    position: relative;\n    padding-bottom: ".concat(100 / aspectRatio, "%;");
 });
 var ErrorMsg = styled.div(templateObject_3 || (templateObject_3 = __makeTemplateObject(["\n  padding: 40px;\n"], ["\n  padding: 40px;\n"])));
 var Cam = styled.video(templateObject_4 || (templateObject_4 = __makeTemplateObject(["\n  width: 100%;\n  height: 100%;\n  object-fit: cover;\n  z-index: 0;\n  transform: rotateY(", ");\n"], ["\n  width: 100%;\n  height: 100%;\n  object-fit: cover;\n  z-index: 0;\n  transform: rotateY(", ");\n"])), function (_a) {
@@ -93,17 +109,28 @@ var Camera = React.forwardRef(function (_a, ref) {
     var _m = useState(false), permissionDenied = _m[0], setPermissionDenied = _m[1];
     var _o = useState(false), torchSupported = _o[0], setTorchSupported = _o[1];
     var _p = useState(false), torch = _p[0], setTorch = _p[1];
+    var mounted = useRef(false);
+    useEffect(function () {
+        mounted.current = true;
+        return function () {
+            mounted.current = false;
+        };
+    }, []);
     useEffect(function () {
         numberOfCamerasCallback(numberOfCameras);
     }, [numberOfCameras]);
-    var switchTorch = function (on) {
-        if (on === void 0) { on = false; }
-        return __awaiter(void 0, void 0, void 0, function () {
-            var supportedConstraints, track, _a;
+    var switchTorch = function () {
+        var args_1 = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args_1[_i] = arguments[_i];
+        }
+        return __awaiter(void 0, __spreadArray([], args_1, true), void 0, function (on) {
+            var supportedConstraints, track;
+            if (on === void 0) { on = false; }
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
-                        if (!(stream && (navigator === null || navigator === void 0 ? void 0 : navigator.mediaDevices))) return [3 /*break*/, 4];
+                        if (!(stream && (navigator === null || navigator === void 0 ? void 0 : navigator.mediaDevices) && !!mounted.current)) return [3 /*break*/, 4];
                         supportedConstraints = navigator.mediaDevices.getSupportedConstraints();
                         track = stream.getTracks()[0];
                         if (!(supportedConstraints && 'torch' in supportedConstraints && track)) return [3 /*break*/, 4];
@@ -115,7 +142,7 @@ var Camera = React.forwardRef(function (_a, ref) {
                         _b.sent();
                         return [2 /*return*/, true];
                     case 3:
-                        _a = _b.sent();
+                        _b.sent();
                         return [2 /*return*/, false];
                     case 4: return [2 /*return*/, false];
                 }
@@ -195,7 +222,7 @@ var Camera = React.forwardRef(function (_a, ref) {
         torchSupported: torchSupported,
     }); });
     useEffect(function () {
-        initCameraStream(stream, setStream, currentFacingMode, videoSourceDeviceId, setNumberOfCameras, setNotSupported, setPermissionDenied);
+        initCameraStream(stream, setStream, currentFacingMode, videoSourceDeviceId, setNumberOfCameras, setNotSupported, setPermissionDenied, !!mounted.current);
     }, [currentFacingMode, videoSourceDeviceId]);
     useEffect(function () {
         switchTorch(false).then(function (success) { return setTorchSupported(success); });
@@ -247,7 +274,7 @@ var shouldSwitchToCamera = function (currentFacingMode) { return __awaiter(void 
         }
     });
 }); };
-var initCameraStream = function (stream, setStream, currentFacingMode, videoSourceDeviceId, setNumberOfCameras, setNotSupported, setPermissionDenied) { return __awaiter(void 0, void 0, void 0, function () {
+var initCameraStream = function (stream, setStream, currentFacingMode, videoSourceDeviceId, setNumberOfCameras, setNotSupported, setPermissionDenied, isMounted) { return __awaiter(void 0, void 0, void 0, function () {
     var cameraDeviceId, switchToCamera, constraints, getWebcam;
     var _a;
     return __generator(this, function (_b) {
@@ -273,15 +300,15 @@ var initCameraStream = function (stream, setStream, currentFacingMode, videoSour
                     video: {
                         deviceId: cameraDeviceId,
                         facingMode: currentFacingMode,
-                        width: { ideal: 1920 },
-                        height: { ideal: 1920 },
                     },
                 };
                 if ((_a = navigator === null || navigator === void 0 ? void 0 : navigator.mediaDevices) === null || _a === void 0 ? void 0 : _a.getUserMedia) {
                     navigator.mediaDevices
                         .getUserMedia(constraints)
                         .then(function (stream) {
-                        setStream(handleSuccess(stream, setNumberOfCameras));
+                        if (isMounted) {
+                            setStream(handleSuccess(stream, setNumberOfCameras));
+                        }
                     })
                         .catch(function (err) {
                         handleError(err, setNotSupported, setPermissionDenied);
@@ -296,7 +323,9 @@ var initCameraStream = function (stream, setStream, currentFacingMode, videoSour
                     if (getWebcam) {
                         getWebcam(constraints, function (stream) { return __awaiter(void 0, void 0, void 0, function () {
                             return __generator(this, function (_a) {
-                                setStream(handleSuccess(stream, setNumberOfCameras));
+                                if (isMounted) {
+                                    setStream(handleSuccess(stream, setNumberOfCameras));
+                                }
                                 return [2 /*return*/];
                             });
                         }); }, function (err) {
